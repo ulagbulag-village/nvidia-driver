@@ -32,7 +32,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          repository: git@gitlab.com:nvidia/container-images/driver.git
+          repository: container-images/driver
+          github-server-url: https://gitlab.com/nvidia
 
       - name: Install core packages
         run: >
