@@ -22,7 +22,7 @@ env:
 
 jobs:
   build-and-push-image-nvidia-driver:
-    if: ${{ github.repository }} == ${{ env.REGISTRY_REPOSITORY }}/${{ env.REPOSITORY_NAME }}
+    if: ${{ github.repository }} == 'ulagbulag-village/netai-cloud'
     runs-on: ubuntu-latest
     permissions:
       contents: read
