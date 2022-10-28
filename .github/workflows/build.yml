@@ -31,37 +31,37 @@ jobs:
 
     steps:
       - name: Install core packages
-        run: >
+        run: |
           sudo apt-get install -y curl git jq wget
 
       - name: Install package - yq
-        run: >
-          wget -qO /usr/local/bin/yq '${{ env.PACKAGE_YQ_URL }}'
+        run: |
+          wget -qO /usr/local/bin/yq '${{ env.PACKAGE_YQ_URL }}' \
             && chmod a+x /usr/local/bin/yq
 
       - name: Checkout repository
-        run: >
-          git clone '${{ env.GIT_GPU_DRIVER_REPO }}'
-            --branch master
-            --single-branch
+        run: |
+          git clone '${{ env.GIT_GPU_DRIVER_REPO }}' \
+            --branch master \
+            --single-branch \
             driver
 
       - name: Get the target driver version
-        run: >
+        run: |
           echo NVIDIA_DRIVER_VERSION=$(
             curl -s '${{ env.HELM_GPU_OPERATOR_VALUE_URL }}' |
               yq -r '.driver.version'
           ) >> $GITHUB_ENV
 
       - name: Get the latest OS version
-        run: >
+        run: |
           echo OS_FLATCAR_RELEASE_VERSION=$(
             curl -s '${{ env.OS_FLATCAR_RELEASE_URL }}' |
               jq -r '[ to_entries[] | select(.value.channel == "stable") | select(.key > "0") | select(.key <= "9") | .key ] | max'
           ) >> $GITHUB_ENV
 
       - name: Get the latest OS kernel version
-        run: >
+        run: |
           echo OS_FLATCAR_RELEASE_KERNEL_VERSION=$(
             curl -s '${{ env.OS_FLATCAR_RELEASE_URL }}' |
               jq -r '."${{ env.OS_FLATCAR_RELEASE_VERSION }}".major_software.kernel[0]'
