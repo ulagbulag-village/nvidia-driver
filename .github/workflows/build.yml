@@ -32,8 +32,7 @@ jobs:
     steps:
       - name: Install core packages
         run: >
-          apt-get updates
-            && apt-get install -y curl git jq wget
+          sudo apt-get install -y curl git jq wget
 
       - name: Install package - yq
         run: >
