@@ -11,6 +11,7 @@ env:
   REGISTRY_USER: kerryeon
   REGISTRY_REPOSITORY: ulagbulag-village
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  REPOSITORY_NAME: netai-cloud
   IMAGE_NAME: netai-cloud-gpu
 
   PACKAGE_YQ_URL: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -21,9 +22,7 @@ env:
 
 jobs:
   build-and-push-image-nvidia-driver:
-    if: ${{ github.ref == 'refs/heads/master' }}
-    needs:
-      - build-rust
+    if: ${{ github.repository }} == ${{ env.REGISTRY_REPOSITORY }}/${{ env.REPOSITORY_NAME }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -87,7 +86,6 @@ jobs:
 
       - name: Push To ${{ env.REGISTRY }}
         id: push-to-quay
-        if: ${{ github.repository }} == ${{ env.REGISTRY_REPOSITORY }}/${{ env.IMAGE_NAME }}
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-and-push-image.outputs.image }}
