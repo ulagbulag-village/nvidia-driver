@@ -46,6 +46,14 @@ jobs:
             --single-branch \
             driver
 
+      - name: Get the target cuda version
+        run: |
+          echo NVIDIA_CUDA_VERSION=$(
+            curl -s '${{ env.HELM_GPU_OPERATOR_VALUE_URL }}' |
+              yq -r '.operator.initContainer.version' |
+              egrep -o '^[0-9\.]*'
+          ) >> $GITHUB_ENV
+
       - name: Get the target driver version
         run: |
           echo NVIDIA_DRIVER_VERSION=$(
@@ -67,6 +75,13 @@ jobs:
               jq -r '."${{ env.OS_FLATCAR_RELEASE_VERSION }}".major_software.kernel[0]'
           ) >> $GITHUB_ENV
 
+      - name: Patch the driver installation script
+        run: |
+          # TODO: claim a PR to: https://gitlab.com/nvidia/container-images/driver
+          sed -i 's/^\(FROM nvidia\/cuda\:\)[0-9\.]*\(-base-ubuntu\)[0-9\.]*$/ARG CUDA_VERSION\n\1\${CUDA_VERSION}\220.04/g' ./driver/flatcar/Dockerfile
+          sed -i 's/\(local loop_dev=\)/#\1/g' ./driver/flatcar/nvidia-driver
+          sed -i 's/loop=\${loop_dev}\,\(.*\)$/\1; local loop_dev=\/dev\/\$(lsblk | grep "loop" | grep "\/mnt\/coreos" | awk '"'{ print \$1 }'"')/g' ./driver/flatcar/nvidia-driver
+
       - name: Log in to ${{ env.REGISTRY }}
         uses: redhat-actions/podman-login@v1
         with:
@@ -84,6 +99,7 @@ jobs:
           containerfiles: |
             ./driver/flatcar/Dockerfile
           build-args: |
+            CUDA_VERSION=${{ env.NVIDIA_CUDA_VERSION }}
             DRIVER_VERSION=${{ env.NVIDIA_DRIVER_VERSION }}
 
       - name: Push To ${{ env.REGISTRY }}
